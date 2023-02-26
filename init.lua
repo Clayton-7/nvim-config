@@ -111,6 +111,8 @@ vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>", { silent = true })
 
 -- better paste
 vim.keymap.set("v", "p", '"_dP', { silent = true })
+vim.keymap.set('n', '<leader>p', 'i<C-R>+')
+vim.keymap.set('i', '<leader>p', '<C-R>+')
 
 -- ctrl-s to save
 vim.keymap.set("n", "<C-s>", ':w<CR>', { silent = true })
@@ -172,6 +174,7 @@ require("nvim-tree").setup()
 -- start nvim with explorer opened
 -- tree_api.tree.toggle({ focus = false })
 vim.keymap.set('n', '<C-b>', tree_api.tree.toggle, { silent = true })
+local tree_opened = false
 
 tree_api.events.subscribe(Event.TreeOpen, function()
   tree_opened = true
@@ -299,25 +302,23 @@ dap.listeners.before.event_exited["dapui_config"] = function()
   dapui.close()
 end
 
-local function build(run)
-  set_terminal(false)
-  set_terminal(true)
-
-  local channel = vim.api.nvim_buf_get_option(0, 'channel')
-  -- teste application without terminal
-  if run then 
-    vim.api.nvim_chan_send(channel, "task build_all_run\n")
-    -- set_terminal(false)
-  else
-    vim.api.nvim_chan_send(channel, "task build_all\n")
-  end
+local function run(clear_console)
+  if clear_console then vim.cmd('TermExec cmd="clear"') end
+  vim.cmd('TermExec cmd="task run"')
 end
 
-vim.keymap.set({'n', 't'}, "<esc>", function() set_terminal(false) end, { silent = true }) -- close terminal
-vim.keymap.set({'n', 't'}, "<leader>5", start_debug, { silent = true })                    -- run debug
-vim.keymap.set({'n', 't'}, "<leader>6", build, { silent = true })                          -- build
-vim.keymap.set({'n', 't'}, "<leader>7", function() build(true) end, { silent = true })     -- build and run
-vim.keymap.set('n', "<leader>4", dapui.eval, { silent = true })                            -- inspect values
+local function build(run_app)
+  vim.cmd('TermExec cmd="task build_all"')
+
+  if run_app then run(false) end
+end
+
+vim.keymap.set('n', "<leader>4", dapui.eval, { silent = true })                             -- inspect values
+vim.keymap.set({'n', 't'}, "<esc>", function() set_terminal(false) end, { silent = true })  -- close terminal
+vim.keymap.set({'n', 't'}, "<leader>5", start_debug, { silent = true })                     -- run debug
+vim.keymap.set({'n', 't'}, "<leader>6", build, { silent = true })                           -- build
+vim.keymap.set({'n', 't'}, "<leader>7", function() build(true) end, { silent = true })      -- build and run
+vim.keymap.set({'n', 't'}, "<leader>8", function() run(true) end, { silent = true })                             -- run
 
 vim.keymap.set("n", "<leader>b", dap.toggle_breakpoint, { silent = true })
 vim.keymap.set("n", "<C-1>", dap.step_into, { silent = true })
