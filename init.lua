@@ -31,8 +31,8 @@ require('packer').startup(function(use)
   use { 'hrsh7th/nvim-cmp', requires = { 'hrsh7th/cmp-nvim-lsp', 'L3MON4D3/LuaSnip', 'saadparwaiz1/cmp_luasnip' }} -- Autocomplete
   use { 'nvim-treesitter/nvim-treesitter', run = function() pcall(require('nvim-treesitter.install').update{ with_sync = true }) end } -- Highlight, edit, and navigate code
   use { 'nvim-treesitter/nvim-treesitter-textobjects', after = 'nvim-treesitter' } -- Additional text objects via treesitter
-  use { 'nvim-tree/nvim-tree.lua', requires = {'nvim-tree/nvim-web-devicons'}} -- explorer
-  use { 'akinsho/toggleterm.nvim', tag = '*', config = function() require("toggleterm").setup() end} -- terminal
+  use { 'nvim-tree/nvim-tree.lua', requires = { 'nvim-tree/nvim-web-devicons' }} -- explorer
+  use { 'akinsho/toggleterm.nvim', tag = '*', config = function() require("toggleterm").setup() end } -- terminal
 
   -- debugger
   use 'mfussenegger/nvim-dap'
@@ -120,6 +120,8 @@ vim.keymap.set("n", "<C-s>", ':w<CR>', { silent = true })
 -- cursor always on center of window
 vim.cmd("nnoremap k kzz")
 vim.cmd("nnoremap j jzz")
+vim.cmd("nnoremap { {zz")
+vim.cmd("nnoremap } }zz")
 
 --------------------------------------------------------------------------- theme
 require("gruvbox").setup({
@@ -160,11 +162,17 @@ require("gruvbox").setup({
     -- faded_aqua = "#000000",
     -- faded_orange = "#000000",
     gray = "#5d7759", ---------- comentarios
-  }
+  },
+  -- transparent_mode = true,
 })
 
 vim.cmd("colorscheme gruvbox")
-vim.opt.guifont = { "JetBrains Mono" } --, ":h13"} -- font
+-- vim.opt.guifont = { "JetBrains Mono:h13" } 
+vim.opt.guifont = { "JetBrains Mono" } -- font
+vim.g.neovide_transparency = 0.89
+vim.g.neovide_refresh_rate = 60
+vim.g.neovide_fullscreen = true
+vim.g.neovide_cursor_trail_size = 0.5
 
 --------------------------------------------------------------------------- explorer
 local tree_api = require("nvim-tree.api")
@@ -213,11 +221,13 @@ local function set_terminal(open)
 end
 
 --------------------------------------------------------------------------- comments
-require('Comment').setup()
-local comment_api = require('Comment.api')
+require('Comment').setup{ ignore = '^$' }
 
-vim.keymap.set("n", "<leader>/", comment_api.toggle.linewise.current, { silent = true })
-vim.keymap.set("v", "<leader>/", function() comment_api.toggle.linewise(vim.fn.visualmode()) end, { silent = true })
+vim.keymap.set("i", "<C-c>", require('Comment.api').toggle.linewise.current, { silent = true })
+-- `gcc` - Toggles the current line using linewise comment
+-- `gbc` - Toggles the current line using blockwise comment
+-- `gc` - Toggles the region using linewise comment
+-- `gb` - Toggles the region using blockwise comment
 
 --------------------------------------------------------------------------- windows
 vim.keymap.set('n', "<C-h>", "<C-w>h", { silent = true })
@@ -308,17 +318,19 @@ local function run(clear_console)
 end
 
 local function build(run_app)
-  vim.cmd('TermExec cmd="task build_all"')
-
-  if run_app then run(false) end
+  if run_app then
+    vim.cmd('TermExec cmd="task build_all_run"')
+  else
+    vim.cmd('TermExec cmd="task build_all"')
+  end
 end
 
-vim.keymap.set('n', "<leader>4", dapui.eval, { silent = true })                             -- inspect values
-vim.keymap.set({'n', 't'}, "<esc>", function() set_terminal(false) end, { silent = true })  -- close terminal
-vim.keymap.set({'n', 't'}, "<leader>5", start_debug, { silent = true })                     -- run debug
-vim.keymap.set({'n', 't'}, "<leader>6", build, { silent = true })                           -- build
-vim.keymap.set({'n', 't'}, "<leader>7", function() build(true) end, { silent = true })      -- build and run
-vim.keymap.set({'n', 't'}, "<leader>8", function() run(true) end, { silent = true })                             -- run
+vim.keymap.set('n', "<leader>4", dapui.eval, { silent = true })                               -- inspect values
+vim.keymap.set({'n', 't'}, "<esc>", function() set_terminal(false) end, { silent = true })    -- close terminal
+vim.keymap.set({'n', 't'}, "<leader>5", start_debug, { silent = true })                       -- run debug
+vim.keymap.set({'n', 't'}, "<leader>6", function() build(false) end, { silent = true })       -- build
+vim.keymap.set({'n', 't'}, "<leader>7", function() build(true) end, { silent = true })        -- build and run
+vim.keymap.set({'n', 't'}, "<leader>8", function() run(true) end, { silent = true })          -- run
 
 vim.keymap.set("n", "<leader>b", dap.toggle_breakpoint, { silent = true })
 vim.keymap.set("n", "<C-1>", dap.step_into, { silent = true })
