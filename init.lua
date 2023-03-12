@@ -31,7 +31,6 @@ require('packer').startup(function(use)
   use { 'hrsh7th/nvim-cmp', requires = { 'hrsh7th/cmp-nvim-lsp', 'L3MON4D3/LuaSnip', 'saadparwaiz1/cmp_luasnip' }} -- Autocomplete
   use { 'nvim-treesitter/nvim-treesitter', run = function() pcall(require('nvim-treesitter.install').update{ with_sync = true }) end } -- Highlight, edit, and navigate code
   use { 'nvim-treesitter/nvim-treesitter-textobjects', after = 'nvim-treesitter' } -- Additional text objects via treesitter
-  use { 'nvim-tree/nvim-tree.lua', requires = { 'nvim-tree/nvim-web-devicons' }} -- explorer
   use { 'akinsho/toggleterm.nvim', tag = '*', config = function() require("toggleterm").setup() end } -- terminal
 
   -- debugger
@@ -123,6 +122,8 @@ vim.cmd("nnoremap j jzz")
 vim.cmd("nnoremap { {zz")
 vim.cmd("nnoremap } }zz")
 
+vim.cmd("vs") -- start with vertical layout split
+
 --------------------------------------------------------------------------- theme
 require("gruvbox").setup({
   palette_overrides = {
@@ -163,7 +164,7 @@ require("gruvbox").setup({
     -- faded_orange = "#000000",
     gray = "#5d7759", ---------- comentarios
   },
-  -- transparent_mode = true,
+  transparent_mode = true,
 })
 
 vim.cmd("colorscheme gruvbox")
@@ -173,38 +174,6 @@ vim.g.neovide_transparency = 0.89
 vim.g.neovide_refresh_rate = 60
 vim.g.neovide_fullscreen = true
 vim.g.neovide_cursor_trail_size = 0.5
-
---------------------------------------------------------------------------- explorer
-local tree_api = require("nvim-tree.api")
-local Event = tree_api.events.Event
-require("nvim-tree").setup()
-
--- start nvim with explorer opened
--- tree_api.tree.toggle({ focus = false })
-vim.keymap.set('n', '<C-b>', tree_api.tree.toggle, { silent = true })
-local tree_opened = false
-
-tree_api.events.subscribe(Event.TreeOpen, function()
-  tree_opened = true
-end)
-
-tree_api.events.subscribe(Event.TreeClose, function()
-  tree_opened = false
-end)
-
-local function close_buffer()
-  if tree_opened then
-    tree_api.tree.close()
-    tree_opened = true
-  end
-
-  vim.cmd('bd')
-  vim.cmd('bnext')
-
-  if tree_opened then
-    tree_api.tree.toggle({ focus = false })
-  end
-end
 
 --------------------------------------------------------------------------- terminal
 vim.keymap.set({'n', 't'}, '<leader>t', "<cmd>ToggleTerm<CR>", { silent = true })
@@ -236,9 +205,20 @@ vim.keymap.set('n', "<C-k>", "<C-w>k", { silent = true })
 vim.keymap.set('n', "<C-l>", "<C-w>l", { silent = true })
 
 --------------------------------------------------------------------------- buffers
-vim.keymap.set("n", "<tab>", ":bnext<CR>", { silent = true })
-vim.keymap.set("n", "<S-tab>", ":bprevious<CR>", { silent = true })
-vim.keymap.set("n", "<C-q>", close_buffer, { silent = true })
+vim.keymap.set("n", "<tab>", ":bn<CR>", { silent = true })
+vim.keymap.set("n", "<S-tab>", ":bp<CR>", { silent = true })
+vim.keymap.set("n", "<C-q>", ":bn<CR>:bd #<CR>", { silent = true })
+
+-- Switch between header and source files
+vim.keymap.set("n", "<A-o>", function()
+  local extension = vim.api.nvim_command_output(":echo expand('%:e')")
+
+  if extension == "c" then
+    vim.cmd(":e %<.h")
+  elseif extension == "h" then
+    vim.cmd(":e %<.c")
+  end
+end, { silent = true })
 
 --------------------------------------------------------------------------- highlight
 local illuminate = require('illuminate')
@@ -300,7 +280,6 @@ end
 
 dap.listeners.after.event_initialized["dapui_config"] = function()
   set_terminal(false)
-  tree_api.tree.close()
   dapui.open()
 end
 
@@ -396,12 +375,13 @@ vim.keymap.set('n', '<leader>f', function()
   })
 end, { desc = '[/] Fuzzily search in current buffer]' })
 
+vim.keymap.set('n', 'gi', telescope.lsp_references, { desc = '[/] [G]oto [I]mplementation' })
 vim.keymap.set('n', '<leader>sf', telescope.find_files, { desc = '[S]earch [F]iles' })
 vim.keymap.set('n', '<leader>sh', telescope.help_tags, { desc = '[S]earch [H]elp' })
 vim.keymap.set('n', '<leader>sw', telescope.grep_string, { desc = '[S]earch current [W]ord' })
 vim.keymap.set('n', '<leader>sg', telescope.live_grep, { desc = '[S]earch by [G]rep' })
 vim.keymap.set('n', '<leader>sd', telescope.diagnostics, { desc = '[S]earch [D]iagnostics' })
-
+--
 -- Configure Treesitter `:help nvim-treesitter`
 require('nvim-treesitter.configs').setup {
   -- Add languages to be installed here that you want installed for treesitter
