@@ -112,9 +112,18 @@ vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>", { silent = true })
 vim.keymap.set("v", "p", '"_dP', { silent = true })
 vim.keymap.set('n', '<leader>p', 'i<C-R>+')
 vim.keymap.set('i', '<leader>p', '<C-R>+')
+vim.keymap.set('i', '<leader>P', '<C-r>"')
 
 -- ctrl-s to save
 vim.keymap.set("n", "<C-s>", ':w<CR>', { silent = true })
+
+-- move whole line up/down
+vim.keymap.set('n', '<A-j>', ':m +1<CR>', { silent = true })
+vim.keymap.set('n', '<A-k>', ':m -2<CR>', { silent = true })
+
+-- put/remove tabs
+vim.keymap.set("n", "<tab>", ":><CR>", { silent = true })
+vim.keymap.set("n", "\\", ":<<CR>", { silent = true })
 
 -- cursor always on center of window
 vim.cmd("nnoremap k kzz")
@@ -164,13 +173,13 @@ require("gruvbox").setup({
     -- faded_orange = "#000000",
     gray = "#5d7759", ---------- comentarios
   },
-  transparent_mode = true,
+  -- transparent_mode = true,
 })
 
 vim.cmd("colorscheme gruvbox")
 -- vim.opt.guifont = { "JetBrains Mono:h13" } 
 vim.opt.guifont = { "JetBrains Mono" } -- font
-vim.g.neovide_transparency = 0.89
+vim.g.neovide_transparency = 0.87
 vim.g.neovide_refresh_rate = 60
 vim.g.neovide_fullscreen = true
 vim.g.neovide_cursor_trail_size = 0.5
@@ -205,7 +214,7 @@ vim.keymap.set('n', "<C-k>", "<C-w>k", { silent = true })
 vim.keymap.set('n', "<C-l>", "<C-w>l", { silent = true })
 
 --------------------------------------------------------------------------- buffers
-vim.keymap.set("n", "<tab>", ":bn<CR>", { silent = true })
+vim.keymap.set("n", "<C-tab>", ":bn<CR>", { silent = true })
 vim.keymap.set("n", "<S-tab>", ":bp<CR>", { silent = true })
 vim.keymap.set("n", "<C-q>", ":bn<CR>:bd #<CR>", { silent = true })
 
@@ -230,9 +239,9 @@ illuminate.configure{
   min_count_to_highlight = 1,
 }
 
-vim.keymap.set({'n', 'v', 'i', 'x'}, "<leader>g", illuminate.goto_prev_reference, { silent = true })
-vim.keymap.set({'n', 'v', 'i', 'x'}, "<leader>j", illuminate.goto_next_reference, { silent = true })
-vim.keymap.set({'n', 'v', 'i', 'x'}, "<leader>dd", illuminate.textobj_select, { silent = true })
+-- vim.keymap.set({'n', 'v', 'i', 'x'}, "<leader>g", illuminate.goto_prev_reference, { silent = true })
+-- vim.keymap.set({'n', 'v', 'i', 'x'}, "<leader>j", illuminate.goto_next_reference, { silent = true })
+-- vim.keymap.set({'n', 'v', 'i', 'x'}, "<leader>dd", illuminate.textobj_select, { silent = true })
 
 -- Highlight on yank `:help vim.highlight.on_yank()`
 vim.api.nvim_create_autocmd('TextYankPost', {
